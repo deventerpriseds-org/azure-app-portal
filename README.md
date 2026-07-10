@@ -39,10 +39,23 @@ use the "change" link in the footer (stored per-browser in `localStorage`).
 ## Deploy
 
 Pushed to `main` → GitHub Actions (`.github/workflows/azure-static-web-apps.yml`)
-deploys the static site to the Azure Static Web App using the
-`AZURE_STATIC_WEB_APPS_API_TOKEN` repo secret.
+deploys the static site to the `app-portal-web` Static Web App.
 
-### First-time provisioning
+**No per-app deploy-token secret is needed.** Following the same pattern as
+`executive-engine-deploy.yml`, the workflow logs in with the shared service
+principal and fetches this app's own deploy token at runtime:
+
+```yaml
+azure/login  ← AZURE_CLIENT_ID / AZURE_CLIENT_SECRET / AZURE_TENANT_ID / AZURE_SUBSCRIPTION_ID
+az staticwebapp secrets list --name app-portal-web  → the deploy token
+```
+
+So the only requirement is that those four service-principal secrets are
+available to this repo (as org secrets, or added to the repo). SWA deploy tokens
+are per-app, which is why a shared `AZURE_STATIC_WEB_APPS_API_TOKEN` can't be
+reused here — it belongs to a different Static Web App.
+
+### First-time provisioning (already done for `app-portal-web`)
 
 ```bash
 az staticwebapp create \
@@ -50,9 +63,6 @@ az staticwebapp create \
   --resource-group EnterpriseDS_ResourceGRP \
   --location eastus2 \
   --sku Free
-# then store the deploy token as the repo secret AZURE_STATIC_WEB_APPS_API_TOKEN
-az staticwebapp secrets list --name app-portal-web \
-  --query "properties.apiKey" -o tsv
 ```
 
 ## Features

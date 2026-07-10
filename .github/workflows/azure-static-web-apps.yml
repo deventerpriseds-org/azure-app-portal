@@ -1,42 +1,49 @@
 name: Deploy App Portal to Azure Static Web Apps
 
+# Mirrors executive-engine-deploy.yml: no per-app deploy-token secret. We log in
+# with the shared service principal (org/repo secrets AZURE_CLIENT_ID/SECRET/
+# TENANT/SUBSCRIPTION) and fetch THIS app's own Static Web App token at runtime.
+# SWA deploy tokens are per-app, so a shared AZURE_STATIC_WEB_APPS_API_TOKEN would
+# target the wrong app — this avoids that entirely.
+
 on:
   push:
     branches: [main]
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches: [main]
+    paths:
+      - 'index.html'
+      - 'staticwebapp.config.json'
+      - '.github/workflows/azure-static-web-apps.yml'
   workflow_dispatch:
 
 jobs:
   build_and_deploy:
-    if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
     name: Build and Deploy
     steps:
       - uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
         with:
-          submodules: false
+          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+
+      - name: Get this app's Static Web App token
+        id: swa_token
+        run: |
+          TOKEN=$(az staticwebapp secrets list \
+            --name app-portal-web \
+            --resource-group EnterpriseDS_ResourceGRP \
+            --query "properties.apiKey" -o tsv)
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ steps.swa_token.outputs.token }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
-          # Static site — no build step, no managed API.
           app_location: "/"
           api_location: ""
           output_location: ""
           skip_app_build: true
-
-  close_pull_request:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    name: Close Pull Request
-    steps:
-      - name: Close PR staging environment
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          action: close
