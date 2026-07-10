@@ -1,5 +1,7 @@
 # Azure App Portal
 
+### 🔗 Live: **https://wonderful-plant-05e79410f.7.azurestaticapps.net**
+
 One place to see **every Azure Static Web App** in the subscription — with
 human-readable display names and descriptions — so auto-generated hostnames
 like `purple-ground-0f377120f` never get lost or forgotten.
