@@ -117,7 +117,7 @@ async function load() {
     render();
   } catch (e) {
     el('status').innerHTML = '<div class="error">Could not reach the scan API at ' + esc(API) +
-      '\\n' + esc(e.message) + '</div>';
+      '\n' + esc(e.message) + '</div>';
   }
 }
 
@@ -144,35 +144,35 @@ function cardHtml(a) {
   if (created) meta.push('created ' + esc(created));
   if (a.location) meta.push('<code>' + esc(a.location) + '</code>');
   if (a.resourceGroup) meta.push(esc(a.resourceGroup));
-  return \`<div class="card \${a.hidden ? 'hidden-app' : ''}" data-name="\${esc(a.name)}">
+  return `<div class="card ${a.hidden ? 'hidden-app' : ''}" data-name="${esc(a.name)}">
     <div class="view-row" style="display:flex;flex-direction:column;gap:10px;">
       <div class="top">
-        <div class="name">\${esc(a.displayName)}</div>
-        \${a.isNew ? '<span class="badge new">new</span>' : ''}
+        <div class="name">${esc(a.displayName)}</div>
+        ${a.isNew ? '<span class="badge new">new</span>' : ''}
       </div>
-      <div class="desc">\${esc(a.description) || '<em style="opacity:.6">No description yet — click Edit to add one.</em>'}</div>
+      <div class="desc">${esc(a.description) || '<em style="opacity:.6">No description yet — click Edit to add one.</em>'}</div>
       <div class="meta">
-        <span title="Azure resource name">\${esc(a.name)}</span>
+        <span title="Azure resource name">${esc(a.name)}</span>
       </div>
-      <div class="meta">\${meta.join(' · ')}</div>
+      <div class="meta">${meta.join(' · ')}</div>
       <div class="actions">
-        \${a.url ? '<a class="open" href="' + esc(a.url) + '" target="_blank" rel="noopener"><button>Open ↗</button></a>' : ''}
-        \${a.repositoryUrl ? '<a class="open" href="' + esc(a.repositoryUrl) + '" target="_blank" rel="noopener"><button class="muted-btn">Repo</button></a>' : ''}
+        ${a.url ? '<a class="open" href="' + esc(a.url) + '" target="_blank" rel="noopener"><button>Open ↗</button></a>' : ''}
+        ${a.repositoryUrl ? '<a class="open" href="' + esc(a.repositoryUrl) + '" target="_blank" rel="noopener"><button class="muted-btn">Repo</button></a>' : ''}
         <button class="muted-btn" onclick="edit(this)">Edit</button>
       </div>
     </div>
     <div class="edit-row">
-      <input class="e-name" value="\${esc(a.displayName)}" placeholder="Display name">
-      <textarea class="e-desc" placeholder="What is this app? Notes to future-you…">\${esc(a.description)}</textarea>
+      <input class="e-name" value="${esc(a.displayName)}" placeholder="Display name">
+      <textarea class="e-desc" placeholder="What is this app? Notes to future-you…">${esc(a.description)}</textarea>
       <label style="display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;">
-        <input type="checkbox" class="e-hidden" \${a.hidden ? 'checked' : ''}> hide from portal
+        <input type="checkbox" class="e-hidden" ${a.hidden ? 'checked' : ''}> hide from portal
       </label>
       <div class="actions">
         <button class="primary" onclick="save(this)">Save</button>
         <button onclick="cancel(this)">Cancel</button>
       </div>
     </div>
-  </div>\`;
+  </div>`;
 }
 
 function edit(btn) { btn.closest('.card').classList.add('editing'); }
